@@ -10,8 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 0) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_27_210636) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "profiles", primary_key: "user_id", id: :uuid, default: nil, force: :cascade do |t|
+    t.text "bio"
+    t.datetime "created_at", null: false
+    t.string "first_name"
+    t.string "last_name"
+    t.string "locale"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "confirmed_at"
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "encrypted_password", null: false
+    t.string "phone", null: false
+    t.integer "role", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["phone"], name: "index_users_on_phone", unique: true
+  end
+
+  add_foreign_key "profiles", "users"
 end
