@@ -1,8 +1,56 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+# Load additional RuboCop cops for YARD documentation checks
+plugins:
+  - rubocop-yard
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+# Inherit the official Rails "omakase" RuboCop configuration
+# This provides a curated set of style and lint rules recommended for Rails projects
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
+
+AllCops:
+  # Target Ruby version used in the project
+  TargetRubyVersion: 3.3
+
+  # Target Rails version used in the project
+  TargetRailsVersion: 8.1
+
+  # Automatically enable new cops when upgrading RuboCop
+  NewCops: enable
+
+# Disable the requirement for `# frozen_string_literal: true`
+# Rails 7+ and modern Ruby versions handle string allocation efficiently
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+
+# Prefer `raise Error, "message"` instead of `raise Error.new("message")`
+# This is the common Ruby style and is shorter
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
+# Treat debugging statements as errors
+# Prevents accidentally committing `binding.pry`, `debugger`, etc.
+Lint/Debugger:
+  Severity: error
+
+# Disable Rails/Pluck cop
+# Sometimes `pluck` can hurt readability, especially when returning simple objects
+Rails/Pluck:
+  Enabled: false
+
+# Enforce using `pluck` inside `where` conditions instead of loading records
+# Helps avoid inefficient queries like `Model.where(...).map(&:id)`
+Rails/PluckInWhere:
+  Enabled: true
+
+# Ensure @param names in YARD docs match actual method parameter names
+YARD/MismatchName:
+  Enabled: true
+
+# Enforce consistent type annotation syntax in YARD tags
+# Example: @param user [User] description
+YARD/TagTypeSyntax:
+  Enabled: true
+
+# Enforce collection type annotation style (Array<Foo> not Array[Foo])
+YARD/CollectionType:
+  Enabled: true
