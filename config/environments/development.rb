@@ -1,6 +1,25 @@
 require "active_support/core_ext/integer/time"
 
+LEVEL_COLORS = {
+  "DEBUG" => "\e[90m",
+  "INFO"  => "\e[0m",
+  "WARN"  => "\e[33m",
+  "ERROR" => "\e[31m",
+  "FATAL" => "\e[31m\e[1m"
+}.freeze
+
+dev_formatter = proc do |severity, time, _progname, msg|
+  color = LEVEL_COLORS.fetch(severity, "\e[0m")
+  badge = severity[0]
+  ts    = time.strftime("%H:%M:%S")
+  "#{color}[#{badge}] #{ts}  #{msg}\e[0m\n"
+end
+
 Rails.application.configure do
+  config.logger = ActiveSupport::TaggedLogging.new(
+    ActiveSupport::Logger.new($stdout).tap { |l| l.formatter = dev_formatter }
+  )
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Make code changes take effect immediately without server restart.
@@ -46,17 +65,13 @@ Rails.application.configure do
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
 
-  # Highlight code that triggered database queries in logs.
-  config.active_record.verbose_query_logs = true
-
-  # Append comments with runtime information tags to SQL queries in logs.
+  config.active_record.verbose_query_logs = false
   config.active_record.query_log_tags_enabled = true
+  config.active_job.verbose_enqueue_logs = false
+  config.action_dispatch.verbose_redirect_logs = false
 
-  # Highlight code that enqueued background job in logs.
-  config.active_job.verbose_enqueue_logs = true
-
-  # Highlight code that triggered redirect in logs.
-  config.action_dispatch.verbose_redirect_logs = true
+  # Lograge handles request logs at :info — suppress :debug SQL noise.
+  config.log_level = :info
 
   # Suppress logger output for asset requests.
   config.assets.quiet = true

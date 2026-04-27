@@ -1,7 +1,9 @@
 class ApplicationJob < ActiveJob::Base
-  # Automatically retry jobs that encountered a deadlock
-  # retry_on ActiveRecord::Deadlocked
+  retry_on ActiveRecord::Deadlocked, wait: 5.seconds, attempts: 3 do |job, error|
+    Rails.logger.warn("[Job] Retrying #{job.class} due to deadlock: #{error.message}")
+  end
 
-  # Most jobs are safe to ignore if the underlying records are no longer available
-  # discard_on ActiveJob::DeserializationError
+  discard_on ActiveJob::DeserializationError do |job, error|
+    Rails.logger.warn("[Job] Discarding #{job.class} — record no longer exists: #{error.message}")
+  end
 end
