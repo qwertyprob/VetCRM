@@ -19,9 +19,6 @@ gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 
-# JSON builder
-gem "jbuilder"
-
 # =========================
 # API / Serialization
 # =========================
@@ -37,30 +34,12 @@ gem "pundit"               # authorization policies
 # =========================
 # OTP / MFA
 # =========================
-gem "rotp"                 # OTP code generation
-gem "twilio-ruby"          # SMS sending
-
-# =========================
-# OAuth
-# =========================
-gem "omniauth"
-gem "omniauth-google-oauth2"
-gem "omniauth-rails_csrf_protection"
+gem "rotp"
 
 # =========================
 # CORS
 # =========================
 gem "rack-cors", "~> 2.0"
-
-# =========================
-# Active Storage
-# =========================
-gem "image_processing", "~> 1.2"
-
-# =========================
-# State machine
-# =========================
-gem "aasm"
 
 # =========================
 # Background / Rails infra
@@ -113,9 +92,6 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
 
-  # API documentation
-  gem "rswag-api"
-  gem "rswag-ui"
 end
 
 # =========================

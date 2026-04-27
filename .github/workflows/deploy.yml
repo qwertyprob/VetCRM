@@ -19,7 +19,7 @@ jobs:
 
       - name: Deploy
         env:
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_USERNAME: ${{ vars.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
@@ -41,7 +41,7 @@ jobs:
 
       - name: Deploy
         env:
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_USERNAME: ${{ vars.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
