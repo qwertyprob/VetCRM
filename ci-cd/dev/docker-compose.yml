@@ -1,0 +1,60 @@
+services:
+  dev-vetassistant:
+    build:
+      context: ../..
+      target: development
+      args:
+        RAILS_ENV: development
+    container_name: dev-vetassistant
+    restart: unless-stopped
+
+    environment:
+      RAILS_ENV: development
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      DB_HOST: dev-vetassistant-db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SOLID_QUEUE_IN_PUMA: "false"
+      JOB_CONCURRENCY: ${JOB_CONCURRENCY:-3}
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - storage-dev-vetassistant:/rails/storage
+
+    depends_on:
+      dev-vetassistant-db:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  dev-vetassistant-db:
+    image: postgres:16
+    container_name: dev-vetassistant-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: vetassist_dev
+
+    volumes:
+      - pgdata-dev-vetassistant:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d vetassist_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  pgdata-dev-vetassistant:
+  storage-dev-vetassistant:

@@ -1,0 +1,48 @@
+services:
+  test-runner:
+    build:
+      context: ../..
+      target: development
+      args:
+        RAILS_ENV: test
+    container_name: test-runner
+
+    environment:
+      RAILS_ENV: test
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      DB_HOST: test-db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+    depends_on:
+      test-db:
+        condition: service_healthy
+
+    networks:
+      - test-network
+
+    command: ["bundle", "exec", "rspec", "--format", "documentation"]
+
+  test-db:
+    image: postgres:16
+    container_name: test-db
+
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: vetassist_test
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d vetassist_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

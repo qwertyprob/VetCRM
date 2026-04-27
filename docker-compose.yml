@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    env_file:
+      - .env.docker
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-vetassist_dev}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME:-vetassist_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  web:
+    build:
+      context: .
+      target: development
+      args:
+        RAILS_ENV: development
+    command: ["bin/rails", "server", "-b", "0.0.0.0"]
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/rails
+      - storage:/rails/storage
+    env_file:
+      - .env.docker
+    environment:
+      RAILS_ENV: development
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgdata:
+  storage:

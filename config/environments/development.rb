@@ -16,8 +16,11 @@ dev_formatter = proc do |severity, time, _progname, msg|
 end
 
 Rails.application.configure do
+  stdout_logger = ActiveSupport::Logger.new($stdout).tap { |l| l.formatter = dev_formatter }
+  file_logger   = ActiveSupport::Logger.new(Rails.root.join("log/development.log"), 5, 50.megabytes)
+
   config.logger = ActiveSupport::TaggedLogging.new(
-    ActiveSupport::Logger.new($stdout).tap { |l| l.formatter = dev_formatter }
+    ActiveSupport::BroadcastLogger.new(stdout_logger, file_logger)
   )
 
   # Settings specified here will take precedence over those in config/application.rb.
