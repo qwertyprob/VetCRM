@@ -10,7 +10,7 @@ jobs:
     environment: env
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build
         env:
@@ -23,7 +23,7 @@ jobs:
     environment: env
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run RSpec
         env:
@@ -41,7 +41,7 @@ jobs:
     environment: env
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build
         run: docker compose -f ./ci-cd/dev/docker-compose.yml build
@@ -65,7 +65,7 @@ jobs:
     environment: env
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build
         run: docker compose -f ./ci-cd/prod/docker-compose.yml build
