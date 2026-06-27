@@ -107,3 +107,7 @@ end
 group :test do
   gem "shoulda-matchers"
 end
+
+gem "image_processing", "~> 2.0"
+
+gem "devise", "~> 5.0"
