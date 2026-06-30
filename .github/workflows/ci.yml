@@ -1,83 +1,78 @@
 name: CI / CD
-
 on:
   push:
   pull_request:
-
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: env
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Build
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: docker compose -f ./ci-cd/test/docker-compose.yml build
-
+  
   test:
     needs: build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: env
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Run RSpec
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: docker compose -f ./ci-cd/test/docker-compose.yml up --exit-code-from test-runner --abort-on-container-exit
-
       - name: Cleanup
         if: always()
         run: docker compose -f ./ci-cd/test/docker-compose.yml down -v
-
+  
   deploy-dev:
-    needs: test
-    if: github.ref == 'refs/heads/dev'
-    runs-on: self-hosted
-    environment: env
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build
-        run: docker compose -f ./ci-cd/dev/docker-compose.yml build
-
-      - name: Deploy
-        env:
-          DB_USERNAME: ${{ vars.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-        run: |
-          docker compose -f ./ci-cd/dev/docker-compose.yml down
-          docker compose -f ./ci-cd/dev/docker-compose.yml up -d
-
-      - name: Cleanup images
-        run: docker image prune -f
-
-  deploy-prod:
     needs: test
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     environment: env
-
     steps:
       - uses: actions/checkout@v4
-
+      
+      - name: Cleanup old containers
+        run: docker compose -f ./ci-cd/dev/docker-compose.yml down -v --remove-orphans
+      
       - name: Build
-        run: docker compose -f ./ci-cd/prod/docker-compose.yml build
-
+        run: docker compose -f ./ci-cd/dev/docker-compose.yml build
+      
       - name: Deploy
         env:
           DB_USERNAME: ${{ vars.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
-          docker compose -f ./ci-cd/prod/docker-compose.yml down
+          docker compose -f ./ci-cd/dev/docker-compose.yml up -d
+      
+      - name: Cleanup images
+        run: docker image prune -f
+  
+  deploy-prod:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: env
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Cleanup old containers
+        run: docker compose -f ./ci-cd/prod/docker-compose.yml down -v --remove-orphans
+      
+      - name: Build
+        run: docker compose -f ./ci-cd/prod/docker-compose.yml build
+      
+      - name: Deploy
+        env:
+          DB_USERNAME: ${{ vars.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+        run: |
           docker compose -f ./ci-cd/prod/docker-compose.yml up -d
-
+      
       - name: Cleanup images
         run: docker image prune -f
