@@ -39,7 +39,7 @@ gem "rotp"
 # =========================
 # CORS
 # =========================
-gem "rack-cors", "~> 2.0"
+gem "rack-cors", "~> 3.0"
 
 # =========================
 # Background / Rails infra
